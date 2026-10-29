@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Simulador do 2º turno 2026</title>
-<meta name="description" content="Simule para onde foram os eleitores de cada candidato do 1º turno e veja o 2º turno presidencial de 2026 recalculado no Brasil e em cada estado.">
+<meta name="description" content="Simule para onde foram os eleitores de cada candidato do 1º turno e veja o 2º turno presidencial de 2026 recalculado.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: ferramenta em duas colunas — controles por origem à esquerda, placar fixo à direita; no celular, placar compacto grudado no topo */
+/* Layout: ferramenta em duas colunas — uma linha de controles por candidato do 1º turno à esquerda, placar fixo à direita; no celular, placar compacto grudado no topo */
 :root {
   --bg: #f5f6f8; --panel: #ffffff; --ink: #161a22; --muted: #5d6573; --line: #dde1e8; --track: #e8ebf0;
   --flavio: #2f6fd0; --lula: #d1432f; --nv: #a9b0bb; --focus: #1f5fbf;
@@ -34,19 +34,23 @@ header { display: grid; gap: 8px; margin-bottom: 22px; max-width: 760px; }
 h1 { font-family: var(--display); font-stretch: 80%; font-weight: 800; font-size: clamp(30px, 5vw, 46px); line-height: 1.02; margin: 0; text-wrap: balance; letter-spacing: -.01em; }
 h1 .f { color: var(--flavio); } h1 .l { color: var(--lula); }
 .lede { color: var(--muted); margin: 0; max-width: 65ch; }
-.grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 20px; align-items: start; }
 .panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 20px; min-width: 0; }
 h2 { font-family: var(--display); font-stretch: 85%; font-weight: 700; font-size: 20px; margin: 0 0 4px; text-wrap: balance; }
 .note { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
 .presets button { font: 500 13px var(--body); padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--ink); cursor: pointer; }
 .presets button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.presets-note { font-size: 12px; color: var(--muted); min-height: 1.5em; margin-bottom: 8px; }
+.presets-note { font-size: 12px; color: var(--muted); min-height: 1.5em; margin-bottom: 8px; max-width: 70ch; }
 button:focus-visible, input:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 16px; padding: 14px 0; border-top: 1px solid var(--line); }
-.row-head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.group { font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 16px 0 2px; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 6px 16px; padding: 12px 0; border-top: 1px solid var(--line); }
+.row-head { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: baseline; gap: 4px 10px; flex-wrap: wrap; }
+.row-head .who { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; min-width: 0; }
 .row-head b { font-weight: 600; }
-.row-head span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.row-head .party { font-size: 12px; color: var(--muted); }
+.row-head .tag { font-size: 11px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; }
+.row-head .votes { font-family: var(--mono); font-size: 12px; color: var(--muted); }
 .sl { display: grid; grid-template-columns: minmax(0, 1fr) 68px; gap: 4px 8px; align-items: center; }
 .sl .lab { grid-column: 1 / -1; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
 .sw { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
@@ -78,18 +82,9 @@ input[type=number] { width: 100%; font: 13px var(--mono); padding: 4px 6px; bord
 .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
 .stats span { display: block; font-size: 12px; color: var(--muted); }
 .stats b { font-family: var(--mono); font-weight: 600; font-variant-numeric: tabular-nums; }
-.states { display: grid; gap: 3px; }
-.st { display: grid; grid-template-columns: 34px minmax(0, 1fr) 52px; gap: 8px; align-items: center; font-size: 12px; }
-.st .uf { font-family: var(--mono); color: var(--muted); }
-.st .val { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
-.track { position: relative; height: 12px; background: var(--track); border-radius: 3px; }
-.track .mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--muted); }
-.track .b { position: absolute; top: 2px; bottom: 2px; border-radius: 2px; transition: left .2s ease, width .2s ease; }
-.track .real { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--ink); }
-.states-head { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin: 0 52px 6px 42px; font-family: var(--mono); }
-.count { font-size: 13px; margin: 0 0 10px; }
 .compact { display: none; }
 footer { margin-top: 28px; font-size: 12px; color: var(--muted); max-width: 80ch; display: grid; gap: 6px; }
+footer p { margin: 0; }
 footer a { color: inherit; }
 @media (max-width: 860px) {
   .grid { grid-template-columns: minmax(0, 1fr); }
@@ -99,7 +94,7 @@ footer a { color: inherit; }
   .compact .nums { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 13px; margin-bottom: 4px; }
 }
 @media (max-width: 460px) { .row { grid-template-columns: minmax(0, 1fr); } .duel div strong { font-size: 22px; } }
-@media (prefers-reduced-motion: reduce) { .mix i, .bar i, .track .b { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .mix i, .bar i { transition: none; } }
 </style>
 </head>
 <body>
@@ -107,7 +102,7 @@ footer a { color: inherit; }
   <header>
     <div class="eyebrow">Eleição presidencial 2026 · 2º turno em 25/out</div>
     <h1>E se os votos tivessem migrado diferente? <span class="l">Lula</span> × <span class="f">Flávio</span></h1>
-    <p class="lede">Escolha para onde foi o eleitor de cada candidato do 1º turno. O que sobra não vota (abstenção, branco ou nulo). O placar recalcula o 2º turno na hora, para o Brasil e para cada estado.</p>
+    <p class="lede">Escolha para onde foi o eleitor de cada um dos 12 candidatos do 1º turno. O que sobra não vota (abstenção, branco ou nulo). O placar recalcula o 2º turno na hora.</p>
   </header>
 
   <div class="compact" id="compact" aria-hidden="true">
@@ -145,36 +140,47 @@ footer a { color: inherit; }
           <div><span>Diferença para o real (Lula)</span><b id="s-d">—</b></div>
         </div>
       </section>
-
-      <section class="panel" aria-labelledby="t-uf">
-        <h2 id="t-uf">Quem venceria em cada estado</h2>
-        <p class="count" id="count"></p>
-        <div class="states-head"><span>← Flávio</span><span>50%</span><span>Lula →</span></div>
-        <div class="states" id="states"></div>
-        <p class="note" style="margin:10px 0 0">Barra: % do Lula nos votos válidos no cenário. Traço: resultado real. Os mesmos percentuais valem para todos os estados.</p>
-      </section>
     </aside>
   </div>
 
   <footer>
-    <p>Votos do 1º e 2º turno compilados de veículos que reproduzem a totalização do TSE (Estadão Conteúdo, Bloomberg Línea, Lado a Lado, Radar da Eleição, Metrópoles). A opção AtlasIntel usa a pesquisa de 13–18/out para Cury, Renan, Caiado e Zema. Os cenários são hipóteses: o voto é secreto.</p>
-    <p>Conferência oficial: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">resultados.tse.jus.br</a></p>
+    <p>Votos do 1º turno: totalização do TSE com 100% das seções, via Estadão Conteúdo. Resultado real do 2º turno: TSE, via Bloomberg Línea.</p>
+    <p>A opção AtlasIntel usa a pesquisa AtlasIntel/Bloomberg de 13 a 18/out/2026 (4.998 entrevistas, margem de erro de 1 ponto, registro TSE BR-02418/2026), publicada por InfoMoney, IstoÉ Dinheiro e BPMoney. A pesquisa traz Cury, Renan Santos e Caiado separados e junta Zema e os demais candidatos no grupo "outros". A margem de erro não vale para esses subgrupos, que são bem menores que a amostra total.</p>
+    <p>Os cenários são hipóteses: o voto é secreto. Conferência oficial: <a href="https://resultados.tse.jus.br" target="_blank" rel="noopener">resultados.tse.jus.br</a></p>
   </footer>
 </div>
 
 <script>
-// Dados: votos do 1º turno por origem (Brasil e UFs) e resultado real do 2º turno.
-// "af"/"al" = % para Flávio/Lula segundo a pesquisa AtlasIntel (13–18/out/2026).
-const D = {"origens":[{"n":"Flávio","af":null,"al":null,"v":56104503},{"n":"Lula","af":null,"al":null,"v":53879538},{"n":"Cury","af":42.4,"al":52.1,"v":3448569},{"n":"Renan Santos","af":33.5,"al":31.9,"v":2675887},{"n":"Caiado","af":69.8,"al":24.5,"v":2605148},{"n":"Zema e demais","af":61.3,"al":30.7,"v":587143},{"n":"Não votou no 1º turno","af":null,"al":null,"v":39444291}],"real":{"lula":64256232,"flavio":59826041},"ufs":[["AC","Acre",[302829,134763,13509,7974,8584,1454,144676],144513,287715],["AP","Amapá",[212301,212487,19059,11343,8321,1348,112130],222968,198674],["AM","Amazonas",[976843,1046959,77496,35383,28220,5644,627848],1145783,975245],["PA","Pará",[2164112,2427209,124984,84133,52036,10699,1399225],2690449,2199940],["RO","Rondônia",[652988,250667,25280,19187,16929,3549,297293],294446,674382],["RR","Roraima",[231322,74420,8579,6623,3639,1087,75851],83505,219675],["TO","Tocantins",[469321,404009,22434,12983,20189,2741,250346],442962,467916],["AL","Alagoas",[735727,995460,42379,26919,14187,3819,623270],1152621,744140],["BA","Bahia",[2442251,5664345,195175,117276,122412,17976,2752461],6485258,2608761],["CE","Ceará",[1756690,3555514,140445,107862,45504,12359,1378731],4036124,1819478],["MA","Maranhão",[1239226,2566280,85021,60558,50130,9625,1172676],2808231,1229971],["PB","Paraíba",[831296,1541178,73904,42231,19607,5279,734784],1794059,865210],["PE","Pernambuco",[1737996,3553845,137785,85696,73373,12322,1622433],4117513,1832554],["PI","Piauí",[517066,1523725,47650,32196,21679,3864,558364],1653989,525859],["RN","Rio Grande do Norte",[720399,1237959,57392,35222,16368,5179,587927],1413596,737409],["SE","Sergipe",[417839,856019,38895,21405,26651,4303,375023],989041,433354],["DF","Distrito Federal",[909628,675617,45916,46802,85095,9928,485512],825224,979542],["GO","Goiás",[2051713,1188922,53972,53972,471971,6890,1252767],1585555,2345334],["MT","Mato Grosso",[1298627,581641,40065,33089,33089,6777,644513],694167,1351099],["MS","Mato Grosso do Sul",[873303,516828,39194,31892,23248,5664,534152],628973,927892],["ES","Espírito Santo",[1233141,850007,65056,53125,39169,10355,740572],1001965,1294504],["MG","Minas Gerais",[5777336,5189303,409587,246710,229944,120960,4396137],6351099,6241786],["RJ","Rio de Janeiro",[4966878,3692599,247360,211755,199575,49659,3487948],4565393,5169033],["SP","São Paulo",[12921715,9505286,893298,803719,579773,176669,9239944],12119274,14139178],["PR","Paraná",[3945219,2054596,204801,177143,171216,30951,2028414],2566504,4291444],["RS","Rio Grande do Sul",[3573783,2294759,195296,167558,158821,33786,2098542],2824552,3874378],["SC","Santa Catarina",[3000020,1127168,134273,132795,79911,27087,1233397],1418314,3220071]]};
+// Votos do 1º turno (TSE, 100% das seções) e resultado real do 2º turno.
+// af/al = % dos eleitores daquele candidato que votariam em Flávio/Lula, segundo a AtlasIntel (13–18/out/2026).
+// g: "outros" = sem dado próprio na pesquisa; recebe o valor do grupo "outros" (61,3% Flávio, 30,7% Lula).
+const D = {
+  origens: [
+    { n: 'Flávio Bolsonaro', p: 'PL', v: 56104503 },
+    { n: 'Lula', p: 'PT', v: 53879538 },
+    { n: 'Augusto Cury', p: 'Avante', v: 3448569, af: 42.4, al: 52.1 },
+    { n: 'Renan Santos', p: 'Missão', v: 2675887, af: 33.5, al: 31.9 },
+    { n: 'Ronaldo Caiado', p: 'PSD', v: 2605148, af: 69.8, al: 24.5 },
+    { n: 'Romeu Zema', p: 'Novo', v: 326488, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Samara Martins', p: 'UP', v: 122911, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Hertz Dias', p: 'PSTU', v: 43103, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Clariana Barão', p: 'DC', v: 40043, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Edmilson Costa', p: 'PCB', v: 22693, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Wilson Grassi', p: 'Democrata', v: 16881, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Rui Costa Pimenta', p: 'PCO', v: 15024, af: 61.3, al: 30.7, g: 'outros' },
+    { n: 'Não votou em ninguém', p: 'abstenção, brancos e nulos', v: 39444291, nv: true },
+  ],
+  real: { lula: 64256232, flavio: 59826041 },
+};
 const NF = new Intl.NumberFormat('pt-BR');
 const P1 = new Intl.NumberFormat('pt-BR', { style: 'percent', minimumFractionDigits: 1, maximumFractionDigits: 1 });
-const mi = (v) => { const a = Math.abs(v); return a >= 1e6 ? (a / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mi' : a >= 1e3 ? Math.round(a / 1e3).toLocaleString('pt-BR') + ' mil' : NF.format(Math.round(a)); };
+const mi = (v) => { const a = Math.abs(v); return a >= 1e6 ? (a / 1e6).toLocaleString('pt-BR', { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + ' mi' : a >= 1e4 ? Math.round(a / 1e3).toLocaleString('pt-BR') + ' mil' : NF.format(Math.round(a)); };
 const r1 = (x) => Math.round(x * 10) / 10;
 const share = (l, f) => (l + f > 0 ? l / (l + f) : 0.5);
 const O = D.origens;
 let F = [], L = [];
 const NOTES = {
-  atlas: 'Cury, Renan, Caiado e Zema pela pesquisa AtlasIntel (13–18/out); as outras linhas ficam como estão.',
+  atlas: 'Cury, Renan Santos e Caiado pela pesquisa AtlasIntel (13–18/out). A pesquisa junta Zema e os demais candidatos em "outros" (61,3% Flávio, 30,7% Lula), e esse valor foi aplicado a cada um deles. Flávio, Lula e quem não votou ficam como estão.',
   fiel: 'Cada um fica só com os próprios eleitores do 1º turno; todos os outros não votam. Ajuste as barras para montar a sua estimativa.',
 };
 function preset(p) {
@@ -186,7 +192,12 @@ function el(tag, attrs = {}, ...kids) { const e = document.createElement(tag); f
 // Controles
 const rows = document.getElementById('rows');
 O.forEach((o, i) => {
-  const head = el('div', { class: 'row-head' }, el('b', {}, o.n), el('span', {}, mi(o.v) + ' votos no 1º turno'));
+  if (i === 0) rows.append(el('div', { class: 'group' }, 'Finalistas'));
+  if (i === 2) rows.append(el('div', { class: 'group' }, 'Demais candidatos do 1º turno'));
+  if (o.nv) rows.append(el('div', { class: 'group' }, 'Quem não votou em candidato'));
+  const who = el('span', { class: 'who' }, el('b', {}, o.n), el('span', { class: 'party' }, o.p));
+  if (o.g === 'outros') who.append(el('span', { class: 'tag', title: 'Na pesquisa AtlasIntel, este candidato está no grupo "outros".' }, 'grupo "outros" na AtlasIntel'));
+  const head = el('div', { class: 'row-head' }, who, el('span', { class: 'votes' }, mi(o.v) + ' votos no 1º turno'));
   const mk = (side, name) => {
     const r = el('input', { type: 'range', min: '0', max: '100', step: '0.1', id: `r-${side}-${i}`, 'aria-label': `${o.n} para ${name}, em %` });
     const n = el('input', { type: 'number', min: '0', max: '100', step: '0.1', id: `n-${side}-${i}`, 'aria-label': `${o.n} para ${name}, valor em %` });
@@ -203,17 +214,9 @@ O.forEach((o, i) => {
   rows.append(el('div', { class: 'row' }, head, mk('f', 'Flávio'), mk('l', 'Lula'), mix, el('div', { class: 'eff', id: `eff-${i}` })));
 });
 
-// Estados
-const states = document.getElementById('states');
-const stEls = D.ufs.map((u) => {
-  const b = el('span', { class: 'b' }), real = el('span', { class: 'real' }), val = el('span', { class: 'val' });
-  const row = el('div', { class: 'st', title: u[1] }, el('span', { class: 'uf' }, u[0]), el('div', { class: 'track' }, el('span', { class: 'mid' }), b, real), val);
-  return { u, row, b, real, val };
-});
-
 document.querySelectorAll('.presets button').forEach((b) => b.addEventListener('click', () => { [F, L] = preset(b.dataset.p).map((a) => a.slice()); update(); }));
 
-function sim(v) { let f = 0, l = 0, n = 0; v.forEach((x, i) => { f += x * F[i] / 100; l += x * L[i] / 100; n += x * (100 - F[i] - L[i]) / 100; }); return { f, l, n }; }
+function sim() { let f = 0, l = 0, n = 0; O.forEach((o, i) => { f += o.v * F[i] / 100; l += o.v * L[i] / 100; n += o.v * (100 - F[i] - L[i]) / 100; }); return { f, l, n }; }
 
 function update() {
   O.forEach((o, i) => {
@@ -227,15 +230,16 @@ function update() {
     m[0].style.width = F[i] + '%'; m[1].style.width = L[i] + '%'; m[2].style.width = nv + '%';
     document.getElementById(`eff-${i}`).textContent = `${mi(o.v * F[i] / 100)} p/ Flávio · ${mi(o.v * L[i] / 100)} p/ Lula · ${nv.toLocaleString('pt-BR')}% não vota`;
   });
+  let algum = false;
   for (const p of ['fiel', 'atlas']) {
     const [pf, pl] = preset(p);
     const on = pf.every((v, i) => Math.abs(v - F[i]) < 0.05) && pl.every((v, i) => Math.abs(v - L[i]) < 0.05);
     document.getElementById('p-' + p).setAttribute('aria-pressed', String(on));
-    if (on) document.getElementById('p-note').textContent = NOTES[p];
+    if (on) { document.getElementById('p-note').textContent = NOTES[p]; algum = true; }
   }
-  if (![...document.querySelectorAll('.presets button')].some((b) => b.getAttribute('aria-pressed') === 'true')) document.getElementById('p-note').textContent = 'Cenário personalizado.';
+  if (!algum) document.getElementById('p-note').textContent = 'Cenário personalizado.';
 
-  const s = sim(O.map((o) => o.v));
+  const s = sim();
   const pl = share(s.l, s.f), rl = share(D.real.lula, D.real.flavio);
   const w = s.l === s.f ? '' : s.l > s.f ? 'l' : 'f';
   const win = document.getElementById('winner'); win.className = 'winner ' + w; win.textContent = w === 'l' ? 'Lula vence' : w === 'f' ? 'Flávio vence' : 'Empate';
@@ -253,23 +257,6 @@ function update() {
   document.getElementById('c-l').textContent = 'Lula ' + P1.format(pl);
   document.getElementById('c-f').textContent = 'Flávio ' + P1.format(1 - pl);
   document.getElementById('c-bl').style.width = pl * 100 + '%'; document.getElementById('c-bf').style.width = (1 - pl) * 100 + '%';
-
-  // Estados
-  const res = stEls.map((x) => { const r = sim(x.u[2]); return { ...x, p: share(r.l, r.f), real: share(x.u[3], x.u[4]) }; });
-  const ext = Math.max(0.1, ...res.map((r) => Math.max(Math.abs(r.p - 0.5), Math.abs(r.real - 0.5)))) * 1.04;
-  const pos = (p) => 50 + (p - 0.5) / ext * 50;
-  res.sort((a, b) => b.p - a.p);
-  states.replaceChildren(...res.map((r) => {
-    const a = pos(0.5), z = pos(r.p);
-    r.b.style.left = Math.min(a, z) + '%'; r.b.style.width = Math.abs(z - a) + '%';
-    r.b.style.background = r.p > 0.5 ? 'var(--lula)' : 'var(--flavio)';
-    r.real.style.left = `calc(${pos(r.real)}% - 1px)`;
-    r.val.textContent = P1.format(r.p);
-    r.row.title = `${r.u[1]}: Lula ${P1.format(r.p)} no cenário, ${P1.format(r.real)} no real`;
-    return r.row;
-  }));
-  const nL = res.filter((r) => r.p > 0.5).length, nR = res.filter((r) => r.real > 0.5).length;
-  document.getElementById('count').textContent = `Lula venceria em ${nL} e Flávio em ${res.length - nL} das 27 UFs. No resultado real: ${nR} e ${res.length - nR}.`;
 }
 [F, L] = preset('fiel').map((a) => a.slice());
 update();
